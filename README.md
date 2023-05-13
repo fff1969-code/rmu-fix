@@ -32,5 +32,44 @@ There could be about 50 places to adjust.
 The reason is that Delay has overhead and it wont' be just 1ms for a call like "await Task.Delay(1)".  
 There are 6~8 await for each click in RMU Editor, which might create 1000ms delay in total.
 
-## 3. Remove Duplicated Initialization
-TBD...
+## 3. Remove Duplicated Auth and Initialization
+Add the lines with a '+' prefix at the place you found in code file.  
+Do not include the '+' itself because it is not part of the code, just to show you which line to add.  
+
+Modify **'Assets/RPGMaker/Codebase/Editor/Common/RpgMakerEditor.cs'**
+```
+// at about line 99
+         private static async Task DelayAuth() {
++            if(Auth.IsAuthenticated)
++            {
++                Debug.Log("[FIX] Already authenticated in DelayAuth");
++                return;
++            }
++
+
+// at about line 500
++        private static bool _initing = false;
+
+        /// <summary>
+        /// ウィンドウ最大化から復帰時の処理。
+        /// </summary>
+        public static void WindowMaximizationRecoveringProcess() {
+            // 認証済でない場合は何もしない
+             if (!Auth.IsAuthenticated)
+             {
++                Debug.LogError("[FIX] Not authenticated in WindowMaximizationRecoveringProcess");
+                 return;
+             }
+ 
++            if (_initing)
++            {
++                Debug.Log("[FIX] Already initializing in WindowMaximizationRecoveringProcess");
++                return;
++            }
++
++            _initing = true;
+```
+
+## Hints
+- The auth might be slow and annoying, if you failed to authenticate, just close Unity and reopen the project.
+- If you're a Unity user, you'd better to enable Unity UI by menu items in **'Window/RPG Maker/Mode/'**, select the 2nd or 3rd one with **'Unity Editor'**. It shows more panels and let you use Unity features. 
